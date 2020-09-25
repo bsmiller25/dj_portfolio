@@ -1,0 +1,23 @@
+{% extends 'dj_portfolio/base.html' %}
+
+{% block content %}
+  <h1>{{ object.name }}</h1>
+
+  <table class="table">
+    <tr>
+      <td>Portfolio</td>
+      <td>{{ object.portfolio }}</td>
+    </tr>
+    
+    <tr>
+      <td>Ticker</td>
+      <td>{{ object.ticker }}</td>
+    </tr>
+    <tr>
+      <td>Shares</td>
+      <td>{{ object.quantity }}</td>
+    </tr>
+  </table>
+  
+   
+{% endblock %}

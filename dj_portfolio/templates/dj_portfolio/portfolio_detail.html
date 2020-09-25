@@ -1,0 +1,164 @@
+{% extends 'dj_portfolio/base.html' %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+  
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.28.0/moment.min.js" integrity="sha512-Q1f3TS3vSt1jQ8AwP2OuenztnLU6LwxgyyYOG1jgMW/cbEMHps/3wjvnl1P3WTrF3chJUWEoxDUEjMxDV8pujg==" crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+
+
+{% endblock %}
+{% block title %}
+  {{ object.name }}
+{% endblock %}
+
+{% block content %}
+  <h1>{{ object.name }}</h1>
+
+  <h3>Value: {{ object.display_value }}</h3>
+  <h3>Yield: {{ object.div }}</h3>
+  
+  <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Add Holding</button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+      
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal">&times;</button>
+	  <h4 class="modal-title">Add Holding</h4>
+        </div>
+        <div class="modal-body">
+	  {% csrf_token %} 
+	  {{ holdingForm.as_p }}
+        </div>
+        <div class="modal-footer">
+	  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	  <button type="button" id="saveHolding" class="btn btn-success">Save</button>
+        </div>
+      </div> 
+    </div>
+  </div>
+  <hr>
+
+  {% if object.holding_set.all %}
+    <canvas id="valChart"></canvas>
+  {% endif  %}
+
+  {% if object.holding_set.all %}
+    <table class="table">
+      <thead>
+	<th>Ticker</th>
+	<th>Price</th>
+	<th>Quantity</th>
+	<th>Value</th>
+	<th>Share</th>
+	<th>Dividend</th>
+	<th>Sector</th>
+	<th>Actions</th>
+      </thead>
+      <tbody>
+	{% for holding in object.holding_set.all %}
+	  <tr>
+	    <td><a href="{% url 'portfolio:stock-detail' pk=holding.stock.pk %}">{{ holding.stock.ticker }}</a></td>
+	    <td>{{ holding.stock.price }}</td>
+	    <td>{{ holding.quantity }}</td>
+	    <td>{{ holding.value }}</td>
+	    <td>{{ holding.display_share }}</td>
+	    <td>{{ holding.stock.div }}</td>
+	    <td>{{ holding.stock.sector }}</td>
+	    <td><a href="{% url 'portfolio:holding-update' pk=holding.id %}">Edit</a> <a href="{% url 'portfolio:holding-delete' pk=holding.id %}">Delete</a></td>
+	  </tr>
+	{% endfor %}
+
+      </tbody>
+    </table>
+  {% endif %}
+
+  
+  <script>
+   $(document).ready( function () {
+       $('#holdings').DataTable();
+   } );
+  </script>
+  
+  
+  <script>
+   $('#saveHolding').click(function(){
+       newHolding();
+   });
+
+   function newHolding(){
+       $("#myModal").modal('hide')
+       
+       $.post("{% url 'portfolio:portfolio-add-holding' %}",
+	      {csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+	       portfolio: {{ object.id }},
+	       stock: $("input[name=stock]").val(),
+	       quantity: $("input[name=quantity]").val()
+	      })
+		    .done(function(msg){
+			location.reload()
+		    })
+   };
+   
+  </script>
+
+  <script>
+   
+   $(document).ready(function(){
+       
+       var _labels = [];
+       var _port;
+       var _spy;
+
+       $.ajax({
+	   url: "{% url 'portfolio:portfolio-value' pk=object.pk %}",
+	   type: "get",
+	   success: function(d) {
+
+	       _port = d.port;
+	       _spy = d.spy;
+	       _labels = d.index;
+	       
+	       var ctx = document.getElementById('valChart').getContext('2d'); 
+	       var chart = new Chart(ctx, {
+		   type: 'line',
+		   data: {
+		       labels: _labels,
+		       datasets: [
+			   {label: 'Portfolio',
+			    backgroundColor: '#f08080',
+			    borderColor: '#f08080',
+			    fill: false,
+			    data: _port,
+			   },
+			   {label: 'SPY',
+			    backgroundColor: '#d1eeee',
+			    borderColor: '#d1eeee',
+			    fill: false,
+			    data: _spy,
+			   }
+		       ]
+		   },
+		   options: {
+		       scales: {
+			   xAxes: [{
+			       type: 'time'
+			   }]
+		       }
+		   }
+	       })
+	   }
+       })
+   })
+   
+  </script>
+
+  
+{% endblock %}

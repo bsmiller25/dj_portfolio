@@ -1,0 +1,13 @@
+{% extends 'dj_portfolio/base.html' %}
+
+{% block content %}
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-8">
+	<form method="post">{% csrf_token %} 
+	  <p>Are you sure you want to delete "{{ object }}"?</p> 
+	  <input type="submit" value="Confirm">
+	</form>
+      </div>
+    </div>
+{% endblock %} 

@@ -1,0 +1,2 @@
+recursive-include dj_portfolio/static *
+recursive-include dj_portfolio/templates *

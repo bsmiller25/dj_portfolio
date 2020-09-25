@@ -1,0 +1,13 @@
+{% extends 'dj_portfolio/base.html' %}
+
+{% block title %}Portfolio{% endblock %}
+{% block content %}
+  <h1>Portfolios</h1>
+  <a href="{% url 'portfolio:portfolio-create' %}" class="btn btn-primary">New Portfolio</a>
+  {% for portfolio in object_list %}
+    <li><a href={% url 'portfolio:portfolio-detail' pk=portfolio.id %}>{{ portfolio.name }}</a></li>
+  {% empty %}
+    <p>You have not created any portfolios yet!</p>
+  {% endfor %}
+  
+{% endblock %}

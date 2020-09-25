@@ -1,0 +1,12 @@
+{% extends 'dj_portfolio/base.html' %}
+
+{% block title %}Holdings{% endblock %}
+{% block content %}
+  <h1>Holdings</h1>
+  {% for holding in object_list %}
+    <li>{{ holding }}</li>
+  {% empty %}
+    <p>You have not created any holdings!</p>
+  {% endfor %}
+  
+{% endblock %}

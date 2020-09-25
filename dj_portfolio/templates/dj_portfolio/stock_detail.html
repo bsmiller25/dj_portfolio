@@ -1,0 +1,59 @@
+{% extends "dj_portfolio/base.html" %}
+{% block title %}Portfolio{% endblock %}
+{% block head %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.28.0/moment.min.js" integrity="sha512-Q1f3TS3vSt1jQ8AwP2OuenztnLU6LwxgyyYOG1jgMW/cbEMHps/3wjvnl1P3WTrF3chJUWEoxDUEjMxDV8pujg==" crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+{% endblock %}
+
+{% block content %}
+  <h1>{{ object.name }}</h1>
+  <h4>{{ object.sector }} | {{ object.industry }}</h4>
+  
+  <canvas id="priceChart"></canvas>
+
+  <h4>Annual Dividends</h4>
+  {{ divs | safe}}
+  
+  <script>
+   
+   $(document).ready(function(){
+       
+       var _labels = [];
+       var _data;
+       
+       $.ajax({
+	   url: "{% url 'portfolio:get-stock-price' %}",
+	   type: "get",
+	   data: {ticker: "{{ object.ticker }}" },
+	   success: function(d) {
+	       
+	       _data = d.data;
+	       _labels = d.index;
+	       
+	       var ctx = document.getElementById('priceChart').getContext('2d'); 
+	       var chart = new Chart(ctx, {
+		   type: 'line',
+		   data: {
+		       labels: _labels,
+		       datasets: [
+			   {label: 'Price',
+			    data: _data,
+			   }
+		       ]
+		   },
+		   options: {
+		       scales: {
+			   xAxes: [{
+			       type: 'time'
+			   }]
+		       }
+		   }
+	       })
+	   }
+       })
+   })
+   
+  </script>
+  
+{% endblock %}
