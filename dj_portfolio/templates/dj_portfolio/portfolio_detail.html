@@ -51,9 +51,12 @@
 	<input id="start" type="date" class="form-control" value="{{ start }}">
       </div>
       <div class="col-sm">
-	<button type="button" class="btn btn-primary" onclick="">Update Chart</button>
+	<button type="button" class="btn btn-primary" onclick="makeValueChart()">Update Chart</button>
       </div>
-    <canvas id="valChart"></canvas>
+    </div>
+    <div id="valChartWrapper">
+      <canvas id="valChart"></canvas>
+    </div>
     <canvas id="sectChart"></canvas>
   {% endif  %}
 
@@ -104,6 +107,9 @@
 
 
    function makeValueChart() {
+
+       $('#valChart').remove();
+       $('#valChartWrapper').append('<canvas id="valChart"></canvas>')
        
        var _labels = [];
        var _port;
@@ -114,7 +120,13 @@
 	   type: "get",
 	   data: {"start": $("#start").val()},
 	   success: function(d) {
+	       console.log(d)
 
+	       if(d.msg){
+		   $('#dateError').remove()
+		   $('#valChartWrapper').prepend('<div id="dateError" class="alert alert-danger">'+d.msg+'</div>');
+	       }
+	       
 	       _port = d.port;
 	       _spy = d.spy;
 	       _labels = d.index;

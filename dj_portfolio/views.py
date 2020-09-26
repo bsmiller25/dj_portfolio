@@ -157,12 +157,21 @@ def get_portfolio_value(request, pk):
     if port.holding_set.all().count() >= 1:
         # get portfolio values
         tickers = ' '.join(port.holding_set.all().values_list('stock__ticker', flat=True))
-        prices = yf.download(tickers,
-                             start,
-                             datetime.datetime.strftime(
-                                 datetime.datetime.today(), '%Y-%m-%d'))['Close'].dropna()
-        quants = port.holding_set.all().values_list('quantity', flat=True)
+        prices_full = yf.download(tickers,
+                                  start,
+                                  datetime.datetime.strftime(
+                                      datetime.datetime.today(), '%Y-%m-%d'))['Close']
+        
+        prices = prices_full.dropna()
 
+        try:
+            if prices_full.isna().iloc[0,0]:
+                prices_full = prices_full.iloc[1:,:]
+        except IndexError:
+            pass
+        
+        quants = port.holding_set.all().values_list('quantity', flat=True)
+            
         if quants.count() > 1:
             values = (prices * quants).sum(axis=1)
         else:
@@ -172,12 +181,23 @@ def get_portfolio_value(request, pk):
 
         port_data = json.loads(values)
         port_data['port'] = port_data.pop('data')
+        
+        new_start = datetime.datetime.strftime(prices.index[0], '%Y-%m-%d')
+        orig_start = datetime.datetime.strftime(prices_full.index[0], '%Y-%m-%d')
 
+        if new_start != orig_start:
+            fault = prices_full.iloc[prices_full.index.get_loc(prices.index[0]) -1,]
+            fault = fault[fault.isna()].index[0]
+
+            port_data['msg'] = 'Earliest available: {}. No data for {}.'.format(
+                new_start, fault)
+ 
         # get benchmark values
         spy = yf.download('SPY',
-                          start,
+                          new_start,
                           datetime.datetime.strftime(
                               datetime.datetime.today(), '%Y-%m-%d'))['Close'].dropna()
+
         spy = spy/spy[0]
         port_data['spy'] = spy.tolist()
         
