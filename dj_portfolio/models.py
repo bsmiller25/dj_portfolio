@@ -77,7 +77,10 @@ class Stock(models.Model):
 
     @property
     def price(self):
-        return(self.history['data'][-1][3])
+        try:
+            return(self.history['data'][-1][3])
+        except:
+            return(0)
 
     @property
     def div(self):
