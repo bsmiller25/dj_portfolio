@@ -1,10 +1,12 @@
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import reverse
+from bs4 import BeautifulSoup
 import yfinance as yf
 import datetime
 import json
 import pandas as pd
+import requests
 import pdb
 
 
@@ -89,6 +91,17 @@ class Stock(models.Model):
             return('{:.2f}%'.format(self.div_yield * 100))
         else:
             return('0%')
+
+    def get_sector_industry(self):
+
+        url = 'https://eresearch.fidelity.com/eresearch/goto/evaluate/snapshot.jhtml?symbols=' + self.ticker
+        resp = requests.get(url)
+        soup = BeautifulSoup(resp.content)
+
+        self.sector = soup.findAll('div', {'class': 'sub-heading'})[0].find_all(text=True)[2]
+        self.industry = soup.findAll('div', {'class': 'sub-heading'})[1].find_all(text=True)[2]
+        
+        self.save()
 
     def refresh_info(self):
         ystock = yf.Ticker(self.ticker)

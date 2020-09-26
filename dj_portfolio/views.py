@@ -180,3 +180,25 @@ def get_portfolio_value(request, pk):
         port_data['spy'] = spy.tolist()
         
         return JsonResponse(port_data)
+
+def get_sector_balance(request, pk):
+    port = Portfolio.objects.get(pk=pk)
+    sect = {}
+
+    # get sector sums
+    for holding in port.holding_set.all():
+        if holding.stock.sector not in sect.keys():
+            sect[holding.stock.sector] = holding.value
+        else:
+            sect[holding.stock.sector] += holding.value
+
+    # get ratios
+    total = port.value
+    sect = {key: round(val / total, 2) for key, val in sect.items()}
+
+    sect = {'labels': list(sect.keys()),
+            'data': list(sect.values())
+            }
+    
+    return JsonResponse(json.loads(json.dumps(sect)))
+    

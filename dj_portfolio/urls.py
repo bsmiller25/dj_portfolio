@@ -13,6 +13,7 @@ urlpatterns = [
     path('<pk>/delete', views.PortfolioDelete.as_view(), name='portfolio-delete'),
 
     path('<pk>/value', views.get_portfolio_value, name='portfolio-value'),
+    path('<pk>/sector', views.get_sector_balance, name='portfolio-sector'),
     
     # helper
     path('add-holding', views.PortfolioAddHolding, name='portfolio-add-holding'),
