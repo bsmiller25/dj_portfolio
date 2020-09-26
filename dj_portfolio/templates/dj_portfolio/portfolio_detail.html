@@ -68,7 +68,7 @@
 	    <td><a href="{% url 'portfolio:stock-detail' pk=holding.stock.pk %}">{{ holding.stock.ticker }}</a></td>
 	    <td>{{ holding.stock.price }}</td>
 	    <td>{{ holding.quantity }}</td>
-	    <td>{{ holding.value }}</td>
+	    <td>{{ holding.display_value }}</td>
 	    <td>{{ holding.display_share }}</td>
 	    <td>{{ holding.stock.div }}</td>
 	    <td>{{ holding.stock.sector }}</td>

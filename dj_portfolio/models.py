@@ -46,6 +46,10 @@ class Holding(models.Model):
         return(self.stock.price * self.quantity)
 
     @property
+    def display_value(self):
+        return('{:.2f}'.format(self.value))
+        
+    @property
     def share(self):
         return((self.value / self.portfolio.value) * 100)
 

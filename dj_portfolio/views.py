@@ -33,11 +33,15 @@ class PortfolioCreate(CreateView):
     fields = "__all__"
 
 class PortfolioDetail(DetailView):
-    model = Portfolio
+    #model = Portfolio
+    queryset = Portfolio.objects.prefetch_related('holding_set')
         
     def get_context_data(self, **kwargs):
         context = super(PortfolioDetail, self).get_context_data(**kwargs)
         context['holdingForm'] = forms.HoldingForm()
+
+        
+
         
         return context
  
