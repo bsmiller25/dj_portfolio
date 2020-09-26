@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.serializers.json import DjangoJSONEncoder
 from django.urls import reverse
 import yfinance as yf
 import datetime
@@ -88,3 +89,18 @@ class Stock(models.Model):
             return('{:.2f}%'.format(self.div_yield * 100))
         else:
             return('0%')
+
+    def refresh_info(self):
+        ystock = yf.Ticker(self.ticker)
+        info = {}
+        try:
+            self.name = ystock.info['shortName']
+        except:
+            # if you are here, maybe install https://github.com/siavashadpey/yfinance
+            pdb.set_trace()
+
+        self.sector = ystock.info['sector']
+        self.industry = ystock.info['industry']
+        self.div_yield = ystock.info['dividendYield']
+        self.history = json.loads(json.dumps(ystock.history(period='max').dropna().to_dict(orient='split'), cls=DjangoJSONEncoder))
+        self.save()

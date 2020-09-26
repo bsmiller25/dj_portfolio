@@ -39,9 +39,6 @@ class PortfolioDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(PortfolioDetail, self).get_context_data(**kwargs)
         context['holdingForm'] = forms.HoldingForm()
-
-        
-
         
         return context
  
@@ -61,20 +58,8 @@ def PortfolioAddHolding(request):
     portfolio = Portfolio.objects.get(pk=request.POST.get('portfolio'))
     stock, created = Stock.objects.get_or_create(ticker=request.POST.get('stock'))
     if created:
-        ystock = yf.Ticker(stock.ticker)
-        info = {}
-        try:
-            stock.name = ystock.info['shortName']
-        except:
-            # if you are here, maybe install https://github.com/siavashadpey/yfinance
-            pdb.set_trace()
-
-        stock.sector = ystock.info['sector']
-        stock.industry = ystock.info['industry']
-        stock.div_yield = ystock.info['dividendYield']
-        stock.history = json.loads(json.dumps(ystock.history(period='max').to_dict(orient='split'), cls=DjangoJSONEncoder))
-        stock.save()
-            
+        stock.refresh_info()
+        
     Holding.objects.get_or_create(
         portfolio=portfolio,
         stock=stock,
@@ -173,7 +158,7 @@ def get_portfolio_value(request, pk):
         prices = yf.download(tickers,
                              start,
                              datetime.datetime.strftime(
-                                 datetime.datetime.today(), '%Y-%m-%d'))['Close']
+                                 datetime.datetime.today(), '%Y-%m-%d'))['Close'].dropna()
         quants = port.holding_set.all().values_list('quantity', flat=True)
 
         if quants.count() > 1:
@@ -190,7 +175,7 @@ def get_portfolio_value(request, pk):
         spy = yf.download('SPY',
                           start,
                           datetime.datetime.strftime(
-                              datetime.datetime.today(), '%Y-%m-%d'))['Close']
+                              datetime.datetime.today(), '%Y-%m-%d'))['Close'].dropna()
         spy = spy/spy[0]
         port_data['spy'] = spy.tolist()
         
