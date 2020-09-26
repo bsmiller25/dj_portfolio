@@ -112,8 +112,8 @@ class Stock(models.Model):
             # if you are here, maybe install https://github.com/siavashadpey/yfinance
             pdb.set_trace()
 
-        self.sector = ystock.info['sector']
-        self.industry = ystock.info['industry']
+        #self.sector = ystock.info['sector']
+        #self.industry = ystock.info['industry']
         self.div_yield = ystock.info['dividendYield']
         self.history = json.loads(json.dumps(ystock.history(period='max').dropna().to_dict(orient='split'), cls=DjangoJSONEncoder))
         self.save()

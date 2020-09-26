@@ -39,7 +39,9 @@ class PortfolioDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(PortfolioDetail, self).get_context_data(**kwargs)
         context['holdingForm'] = forms.HoldingForm()
-        
+        context['start'] = datetime.datetime.strftime(
+            datetime.datetime(datetime.datetime.now().year, 1, 1),
+            '%Y-%m-%d')
         return context
  
 class PortfolioList(ListView):
@@ -59,6 +61,7 @@ def PortfolioAddHolding(request):
     stock, created = Stock.objects.get_or_create(ticker=request.POST.get('stock'))
     if created:
         stock.refresh_info()
+        stock.get_sector_industry()
         
     Holding.objects.get_or_create(
         portfolio=portfolio,
@@ -116,8 +119,7 @@ class StockDetail(DetailView):
             )
         
         
-        return context
-    
+        return context    
 
 class StockList(ListView):
     model = Stock
@@ -145,7 +147,7 @@ def get_stock_price(request):
 def get_portfolio_value(request, pk):
 
     port = Portfolio.objects.get(pk=pk)
-    start = '2019-01-01'
+    start = request.GET['start']
 
     if port.holding_set.all().count() == 0:
         return JsonResponse(

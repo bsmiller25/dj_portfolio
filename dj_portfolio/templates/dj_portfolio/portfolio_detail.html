@@ -1,13 +1,12 @@
 {% extends 'dj_portfolio/base.html' %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
-  
-  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.28.0/moment.min.js" integrity="sha512-Q1f3TS3vSt1jQ8AwP2OuenztnLU6LwxgyyYOG1jgMW/cbEMHps/3wjvnl1P3WTrF3chJUWEoxDUEjMxDV8pujg==" crossorigin="anonymous"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+
 
 
 {% endblock %}
@@ -47,12 +46,19 @@
   <hr>
 
   {% if object.holding_set.all %}
+    <div class="row">
+      <div class="col-sm">
+	<input id="start" type="date" class="form-control" value="{{ start }}">
+      </div>
+      <div class="col-sm">
+	<button type="button" class="btn btn-primary" onclick="">Update Chart</button>
+      </div>
     <canvas id="valChart"></canvas>
     <canvas id="sectChart"></canvas>
   {% endif  %}
 
   {% if object.holding_set.all %}
-    <table class="table">
+    <table id="holdings" class="table">
       <thead>
 	<th>Ticker</th>
 	<th>Price</th>
@@ -83,44 +89,30 @@
 
   
   <script>
-   $(document).ready( function () {
-       $('#holdings').DataTable();
-   } );
+
   </script>
   
   
   <script>
-   $('#saveHolding').click(function(){
-       newHolding();
-   });
-
-   function newHolding(){
-       $("#myModal").modal('hide')
-       
-       $.post("{% url 'portfolio:portfolio-add-holding' %}",
-	      {csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
-	       portfolio: {{ object.id }},
-	       stock: $("input[name=stock]").val(),
-	       quantity: $("input[name=quantity]").val()
-	      })
-		    .done(function(msg){
-			location.reload()
-		    })
-   };
-   
-  </script>
-
-  <script>
-   
    $(document).ready(function(){
+       $('#holdings').DataTable({
+	   "order": [[4, "desc"]]
+       })
+       makeValueChart()
+       makeSectorChart()
+   })
+
+
+   function makeValueChart() {
        
        var _labels = [];
        var _port;
        var _spy;
-
+       
        $.ajax({
-	   url: "{% url 'portfolio:portfolio-value' pk=object.pk %}",
+	   url: "{% url 'portfolio:portfolio-value' pk=object.pk%}",
 	   type: "get",
+	   data: {"start": $("#start").val()},
 	   success: function(d) {
 
 	       _port = d.port;
@@ -157,14 +149,10 @@
 	       })
 	   }
        })
-   })
+       
+   }
    
-  </script>
-
-  <script>
-   
-   $(document).ready(function(){
-
+   function makeSectorChart() {
        var labels = []
        
        $.ajax({
@@ -190,7 +178,25 @@
 	       })
 	   }
        })
-   })
+   };
+   
+   $('#saveHolding').click(function(){
+       newHolding();
+   });
+
+   function newHolding(){
+       $("#myModal").modal('hide')
+       
+       $.post("{% url 'portfolio:portfolio-add-holding' %}",
+	      {csrfmiddlewaretoken: $("input[name=csrfmiddlewaretoken]").val(),
+	       portfolio: {{ object.id }},
+	       stock: $("input[name=stock]").val(),
+	       quantity: $("input[name=quantity]").val()
+	      })
+		    .done(function(msg){
+			location.reload()
+		    })
+   };
 
    
    
