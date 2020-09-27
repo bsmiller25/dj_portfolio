@@ -13,6 +13,7 @@ setup(name='dj_portfolio',
           'django',
           'yfinance',
           'bs4',
+          'lxml',
       ],
       include_package_data=True,
       zip_safe=False)
