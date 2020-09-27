@@ -67,9 +67,13 @@ class Holding(models.Model):
 class Stock(models.Model):
     ticker = models.CharField(max_length=5, unique=True)
     name = models.CharField(max_length=100, null=True, blank=True)
+    summary = models.TextField(null=True, blank=True)
+    logo_url = models.URLField(null=True, blank=True)
     sector = models.CharField(max_length=50, null=True, blank=True)
     industry = models.CharField(max_length=50, null=True, blank=True)
     div_yield = models.FloatField(null=True, blank=True)
+    payoutRatio = models.FloatField(null=True, blank=True)
+    clean200 = models.BooleanField(default=False)
     history = models.JSONField(null=True, blank=True)
 
     def get_absolute_url(self):
@@ -104,16 +108,29 @@ class Stock(models.Model):
         self.save()
 
     def refresh_info(self):
+
+        # https://www.asyousow.org/report-page/2020-clean200
+        clean200 = ['AYI', 'APD', 'GOOG', 'AWK', 'ADI',
+                    'AMAT', 'AUD', 'AGR', 'BLL', 'CSCO',
+                    'CSX', 'DHR', 'DOV', 'EBAY', 'ECL',
+                    'EMR', 'AQUA', 'FTV', 'GPK', 'GPRE',
+                    'HPE', 'HPQ', 'INTC', 'ITRI', 'KSU',
+                    'KMB', 'MKC', 'ON', 'PH', 'TSLA',
+                    'UNFI', 'VMW', 'WM', 'WY', 'WDAY']
+
+        if self.ticker in clean200:
+            self.clean200 = True
+        
         ystock = yf.Ticker(self.ticker)
-        info = {}
         try:
             self.name = ystock.info['shortName']
         except:
             # if you are here, maybe install https://github.com/siavashadpey/yfinance
             pdb.set_trace()
 
-        #self.sector = ystock.info['sector']
-        #self.industry = ystock.info['industry']
+        self.summary = ystock.info['longBusinessSummary']
         self.div_yield = ystock.info['dividendYield']
+        self.payoutRatio = ystock.info['payoutRatio']
+        self.logo_url = ystock.info['logo_url']
         self.history = json.loads(json.dumps(ystock.history(period='max').dropna().to_dict(orient='split'), cls=DjangoJSONEncoder))
         self.save()

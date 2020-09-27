@@ -4,21 +4,43 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.28.0/moment.min.js" integrity="sha512-Q1f3TS3vSt1jQ8AwP2OuenztnLU6LwxgyyYOG1jgMW/cbEMHps/3wjvnl1P3WTrF3chJUWEoxDUEjMxDV8pujg==" crossorigin="anonymous"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+
+  {{ divs_chart|json_script:"divs-data" }}
 {% endblock %}
 
 {% block content %}
   <h1>{{ object.name }}</h1>
   <h4>{{ object.sector }} | {{ object.industry }}</h4>
-  
+  {% if object.clean200 %}
+    <h5>Clean 200 Company</h5>
+  {% endif %}
   <canvas id="priceChart"></canvas>
 
-  <h4>Annual Dividends</h4>
-  {{ divs | safe}}
+  <h4>Summary</h4>
+  <p>{{ object.summary }}</p>
+  
+  <h4>Dividends</h4>
+  <div class="row">
+    <div class="col-sm">
+      Yield: {{ object.div }}
+    </div>
+    <div class="col-sm">
+      Payout Ratio: {{ object.payoutRatio }}
+    </div>  
+  </div>
+
+  <canvas id="divChart"></canvas>
+  {{ divs | safe }}
+
   
   <script>
    
    $(document).ready(function(){
-       
+       stockPriceChart()
+       stockDivChart()
+   })
+
+   function stockPriceChart(){
        var _labels = [];
        var _data;
        
@@ -38,6 +60,9 @@
 		       labels: _labels,
 		       datasets: [
 			   {label: 'Price',
+			    backgroundColor: '#f08080',
+			    borderColor: '#f08080',
+			    fill: false,
 			    data: _data,
 			   }
 		       ]
@@ -45,14 +70,46 @@
 		   options: {
 		       scales: {
 			   xAxes: [{
-			       type: 'time'
+			       type: 'time',
+			       time: {
+				   tooltipFormat: 'MM/DD/YYYY',
+			       }
 			   }]
 		       }
 		   }
 	       })
 	   }
+       })       
+   }
+
+   function stockDivChart(){
+
+       const divs = JSON.parse(document.getElementById('divs-data').textContent);
+       
+       var ctx = document.getElementById('divChart').getContext('2d'); 
+       var chart = new Chart(ctx, {
+	   type: 'line',
+	   data: {
+	       labels: divs.index,
+	       datasets: [
+		   {label: 'Dividends',
+		    fill: false,
+		    data: divs.data,
+		   }
+	       ]
+	   },
+	   options: {
+	       scales: {
+		   xAxes: [{
+		       type: 'time',
+		       time: {
+			   tooltipFormat: 'MM/DD/YYYY',
+		       }
+		   }]
+	       }
+	   }
        })
-   })
+   }
    
   </script>
   

@@ -54,16 +54,19 @@
 	<button type="button" class="btn btn-primary" onclick="makeValueChart()">Update Chart</button>
       </div>
     </div>
+    <h3>Performance
     <div id="valChartWrapper">
       <canvas id="valChart"></canvas>
     </div>
+    <h3>Composition</h3>
     <canvas id="sectChart"></canvas>
   {% endif  %}
-
+  
   {% if object.holding_set.all %}
+    <h3>Holdings</h3>
     <table id="holdings" class="table">
       <thead>
-	<th>Ticker</th>
+	<th>Stock</th>
 	<th>Price</th>
 	<!--<th>Quantity</th> -->
 	<!-- <th>Value</th> --> 
@@ -75,7 +78,7 @@
       <tbody>
 	{% for holding in object.holding_set.all %}
 	  <tr>
-	    <td><a href="{% url 'portfolio:stock-detail' pk=holding.stock.pk %}">{{ holding.stock.ticker }}</a></td>
+	    <td><a href="{% url 'portfolio:stock-detail' pk=holding.stock.pk %}">{{ holding.stock.name }} ({{ holding.stock.ticker }})</a></td>
 	    <td>{{ holding.stock.price }}</td>
 	    <!-- <td>{{ holding.quantity }}</td> -->
 	    <!-- <td>{{ holding.display_value }}</td> -->
@@ -83,6 +86,7 @@
 	    <td>{{ holding.stock.div }}</td>
 	    <td>{{ holding.stock.sector }}</td>
 	    <td><a href="{% url 'portfolio:holding-update' pk=holding.id %}">Edit</a> <a href="{% url 'portfolio:holding-delete' pk=holding.id %}">Delete</a></td>
+	    <td display="none">{% if holding.stock.clean200 %}Clean200{% endif %}</td>
 	  </tr>
 	{% endfor %}
 
@@ -100,7 +104,14 @@
    $(document).ready(function(){
        $('#holdings').DataTable({
 	   //"order": [[4, "desc"]]
-	   "order":[[2, "desc"]]
+	   "order":[[2, "desc"]],
+	   "columnDefs": [
+	       {
+		   "targets": [6],
+		   "visible": false,
+		   "searchable": true,
+	       },
+	   ]
        })
        makeValueChart()
        makeSectorChart()
@@ -155,7 +166,11 @@
 		   options: {
 		       scales: {
 			   xAxes: [{
-			       type: 'time'
+			       type: 'time',
+			       time: {
+				   tooltipFormat: 'MM/DD/YYYY',
+			       }
+
 			   }]
 		       }
 		   }

@@ -106,6 +106,13 @@ class StockDetail(DetailView):
 
         fins = pd.read_json(json.dumps(self.object.history), orient='split')
 
+        divs = fins['Dividends'][fins['Dividends'] != 0]
+        splits = fins['Stock Splits'][fins['Stock Splits'] != 0]
+        for date, split in splits.iteritems():
+            divs[divs.index <= date] = divs[divs.index <= date]/split
+
+        context['divs_chart'] = json.loads(divs.to_json(orient='split'))
+        
         context['divs'] = pd.DataFrame(
             (fins
              .groupby(fins.index.year)
@@ -224,3 +231,4 @@ def get_sector_balance(request, pk):
     
     return JsonResponse(json.loads(json.dumps(sect)))
     
+
