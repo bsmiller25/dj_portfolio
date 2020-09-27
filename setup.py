@@ -12,6 +12,7 @@ setup(name='dj_portfolio',
           'requests',
           'django',
           'yfinance',
+          'bs4',
       ],
       include_package_data=True,
       zip_safe=False)
