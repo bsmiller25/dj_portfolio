@@ -35,7 +35,6 @@ class Portfolio(models.Model):
     
             
 
-
 class Holding(models.Model):
     portfolio = models.ForeignKey('Portfolio', on_delete=models.CASCADE)
     stock = models.ForeignKey('Stock', on_delete=models.CASCADE)
@@ -54,7 +53,10 @@ class Holding(models.Model):
         
     @property
     def share(self):
-        return((self.value / self.portfolio.value) * 100)
+        try:
+            return((self.value / self.portfolio.value) * 100)
+        except ZeroDivisionError:
+            return(0)
 
     @property
     def display_share(self):
