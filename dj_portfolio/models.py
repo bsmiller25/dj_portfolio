@@ -92,6 +92,14 @@ class Stock(models.Model):
             return(0)
 
     @property
+    def price_change(self):
+        try:
+            return('{:.2f}%'.format(
+                (self.history['data'][-1][3] - self.history['data'][-2][3])/self.history['data'][-2][3] * 100))
+        except:
+            return(0)
+
+    @property
     def div(self):
         if self.div_yield:
             return('{:.2f}%'.format(self.div_yield * 100))

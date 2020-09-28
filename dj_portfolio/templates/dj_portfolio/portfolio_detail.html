@@ -75,6 +75,7 @@
       <thead>
 	<th>Stock</th>
 	<th>Price</th>
+	<th>% Day Change</th>
 	<!--<th>Quantity</th> -->
 	<!-- <th>Value</th> --> 
 	<th>Share</th>
@@ -87,6 +88,7 @@
 	  <tr>
 	    <td><a href="{% url 'portfolio:stock-detail' pk=holding.stock.pk %}">{{ holding.stock.name }} ({{ holding.stock.ticker }})</a></td>
 	    <td>{{ holding.stock.price }}</td>
+	    <td}>{{ holding.stock.price_change }}</td>
 	    <!-- <td>{{ holding.quantity }}</td> -->
 	    <!-- <td>{{ holding.display_value }}</td> -->
 	    <td>{{ holding.display_share }}</td>
@@ -111,10 +113,10 @@
    $(document).ready(function(){
        $('#holdings').DataTable({
 	   //"order": [[4, "desc"]]
-	   "order":[[2, "desc"]],
+	   "order":[[3, "desc"]],
 	   "columnDefs": [
 	       {
-		   "targets": [6],
+		   "targets": [7],
 		   "visible": false,
 		   "searchable": true,
 	       },
