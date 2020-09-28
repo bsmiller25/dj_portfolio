@@ -127,8 +127,8 @@ class Stock(models.Model):
         try:
             self.name = ystock.info['shortName']
         except:
-            # if you are here, maybe install https://github.com/siavashadpey/yfinance
-            pdb.set_trace()
+            print('if you are here, maybe install https://github.com/siavashadpey/yfinance')
+            return(False)
 
         self.summary = ystock.info['longBusinessSummary']
         self.div_yield = ystock.info['dividendYield']

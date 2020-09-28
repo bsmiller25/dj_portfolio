@@ -4,9 +4,10 @@ from dj_portfolio.models import *
 class Command(BaseCommand):
     help = 'Refresh stock data'
 
-    stocks = Stock.objects.all()
+    def handle(self, *args, **kwargs):
+        stocks = Stock.objects.all()
 
-    for stk in stocks:
-        stk.refresh_info()
+        for stk in stocks:
+            stk.refresh_info()
 
     
