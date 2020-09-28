@@ -150,8 +150,7 @@ def get_stock_price(request):
     prices = yf.download(request.GET['ticker'],
                          request.GET['start'],
                          datetime.datetime.strftime(
-                             datetime.datetime.today(), '%Y-%m-%d'))
-
+                             datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))
     return JsonResponse(json.loads(prices['Close'].to_json(orient='split')))
 
 def get_portfolio_value(request, pk):
@@ -170,7 +169,7 @@ def get_portfolio_value(request, pk):
         prices_full = yf.download(tickers,
                                   start,
                                   datetime.datetime.strftime(
-                                      datetime.datetime.today(), '%Y-%m-%d'))['Close']
+                                      datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
         
         prices = prices_full.dropna()
 
@@ -206,7 +205,7 @@ def get_portfolio_value(request, pk):
         spy = yf.download('SPY',
                           new_start,
                           datetime.datetime.strftime(
-                              datetime.datetime.today(), '%Y-%m-%d'))['Close'].dropna()
+                              datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close'].dropna()
 
         spy = spy/spy[0]
         port_data['spy'] = spy.tolist()

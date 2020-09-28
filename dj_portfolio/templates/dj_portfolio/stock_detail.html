@@ -65,7 +65,7 @@
 	       _data = d.data;
 	       _labels = d.index;
 
-	       day_ch = ((_data[_data.length -1] / _data[_data.length -2] -1)* 100).toFixed(2)
+	       day_ch = ((_data[_data.length -1] - _data[_data.length -2])/_data[_data.length -2]*100).toFixed(2)
 	       
 	       if (day_ch >= 0) {
 		   $("#valch").remove()
