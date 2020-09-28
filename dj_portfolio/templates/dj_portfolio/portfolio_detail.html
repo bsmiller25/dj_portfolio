@@ -18,8 +18,15 @@
   <h1>{{ object.name }}</h1>
 
   <!-- <h3>Value: {{ object.display_value }}</h3> -->
-  <h3>Yield: {{ object.div }}</h3>
-  
+  <div class="row">
+    <div class="col-sm">
+      <h3>Div Yield:
+	<p>{{ object.div }}</p></h3>
+    </div>
+    <div class="col-sm">
+      <h3 id="daychange">Day Value Change: </h3>
+    </div>
+  </div>
   <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Add Holding</button>
 
   <!-- Modal -->
@@ -132,17 +139,30 @@
 	   type: "get",
 	   data: {"start": $("#start").val()},
 	   success: function(d) {
-	       console.log(d)
-
+	       // display errors
 	       if(d.msg){
 		   $('#dateError').remove()
 		   $('#valChartWrapper').prepend('<div id="dateError" class="alert alert-danger">'+d.msg+'</div>');
 	       }
+
+	       
 	       
 	       _port = d.port;
 	       _spy = d.spy;
 	       _labels = d.index;
+
+	       day_ch = ((d.port[d.port.length -1] / d.port[d.port.length -2] -1)* 100).toFixed(2)
 	       
+	       if (day_ch >= 0) {
+		   $("#valch").remove()
+		   $('#daychange').append('<p id="valch" style="color:green">' + day_ch + '%' + '</p>');
+	       }
+	       if (day_ch < 0) {
+		   $("#valch").remove()
+		   $('#daychange').append('<p id="valch" style="color:red">' + day_ch + '%' + '</p>');
+	       }
+
+	       // make chart
 	       var ctx = document.getElementById('valChart').getContext('2d'); 
 	       var chart = new Chart(ctx, {
 		   type: 'line',

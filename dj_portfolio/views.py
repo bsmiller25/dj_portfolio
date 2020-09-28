@@ -111,6 +111,9 @@ class StockDetail(DetailView):
         for date, split in splits.iteritems():
             divs[divs.index <= date] = divs[divs.index <= date]/split
 
+        context['start'] = datetime.datetime.strftime(
+            datetime.datetime(datetime.datetime.now().year, 1, 1),
+            '%Y-%m-%d')
         context['divs_chart'] = json.loads(divs.to_json(orient='split'))
         
         context['divs'] = pd.DataFrame(
@@ -145,7 +148,7 @@ class StockDelete(DeleteView):
 def get_stock_price(request):
 
     prices = yf.download(request.GET['ticker'],
-                         '2018-09-01',
+                         request.GET['start'],
                          datetime.datetime.strftime(
                              datetime.datetime.today(), '%Y-%m-%d'))
 
@@ -207,7 +210,7 @@ def get_portfolio_value(request, pk):
 
         spy = spy/spy[0]
         port_data['spy'] = spy.tolist()
-        
+
         return JsonResponse(port_data)
 
 def get_sector_balance(request, pk):
