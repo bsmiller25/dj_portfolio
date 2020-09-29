@@ -40,7 +40,7 @@ class PortfolioDetail(DetailView):
         context = super(PortfolioDetail, self).get_context_data(**kwargs)
         context['holdingForm'] = forms.HoldingForm()
         context['start'] = datetime.datetime.strftime(
-            datetime.datetime(datetime.datetime.now().year, 1, 1),
+            datetime.datetime(2020, 9, 28),
             '%Y-%m-%d')
         return context
  
@@ -112,7 +112,7 @@ class StockDetail(DetailView):
             divs[divs.index <= date] = divs[divs.index <= date]/split
 
         context['start'] = datetime.datetime.strftime(
-            datetime.datetime(datetime.datetime.now().year, 1, 1),
+            datetime.datetime(2020, 9, 28),
             '%Y-%m-%d')
         context['divs_chart'] = json.loads(divs.to_json(orient='split'))
         
