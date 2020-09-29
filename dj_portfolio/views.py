@@ -112,7 +112,9 @@ class StockDetail(DetailView):
             divs[divs.index <= date] = divs[divs.index <= date]/split
 
         context['start'] = datetime.datetime.strftime(
-            datetime.datetime(2020, 9, 28),
+             datetime.datetime(datetime.datetime.today().year - 1,
+                               datetime.datetime.today().month,
+                               datetime.datetime.today().day),
             '%Y-%m-%d')
         context['divs_chart'] = json.loads(divs.to_json(orient='split'))
         
