@@ -181,13 +181,13 @@ def get_portfolio_value(request, pk):
         except IndexError:
             pass
         
-        quants = port.holding_set.all().values_list('quantity', flat=True)
+        quants = port.holding_set.all().order_by('stock__ticker').values_list('quantity', flat=True)
             
         if quants.count() > 1:
             values = (prices * quants).sum(axis=1)
         else:
             values = (prices * quants)
-            
+
         values = (values/values[0]).to_json(orient='split')
 
         port_data = json.loads(values)
