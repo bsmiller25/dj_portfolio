@@ -134,7 +134,7 @@
        
        var _labels = [];
        var _port;
-       var _spy;
+       var _voo;
        
        $.ajax({
 	   url: "{% url 'portfolio:portfolio-value' pk=object.pk%}",
@@ -150,7 +150,7 @@
 	       
 	       
 	       _port = d.port;
-	       _spy = d.spy;
+	       _voo = d.voo;
 	       _labels = d.index;
 
 	       day_ch = ((d.port[d.port.length -1] / d.port[d.port.length -2] -1)* 100).toFixed(2)
@@ -177,11 +177,11 @@
 			    fill: false,
 			    data: _port,
 			   },
-			   {label: 'SPY',
+			   {label: 'VOO',
 			    backgroundColor: '#d1eeee',
 			    borderColor: '#d1eeee',
 			    fill: false,
-			    data: _spy,
+			    data: _voo,
 			   }
 		       ]
 		   },

@@ -204,13 +204,13 @@ def get_portfolio_value(request, pk):
                 new_start, fault)
  
         # get benchmark values
-        spy = yf.download('SPY',
+        voo = yf.download('VOO',
                           new_start,
                           datetime.datetime.strftime(
                               datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close'].dropna()
 
-        spy = spy/spy[0]
-        port_data['spy'] = spy.tolist()
+        voo = voo/voo[0]
+        port_data['voo'] = voo.tolist()
 
         return JsonResponse(port_data)
 
