@@ -204,13 +204,13 @@ def get_portfolio_value(request, pk):
                 new_start, fault)
  
         # get benchmark values
-        voo = yf.download('VOO',
+        sp500 = yf.download('^GSPC',
                           new_start,
                           datetime.datetime.strftime(
                               datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close'].dropna()
 
-        voo = voo/voo[0]
-        port_data['voo'] = voo.tolist()
+        sp500 = sp500/sp500[0]
+        port_data['sp500'] = sp500.tolist()
 
         return JsonResponse(port_data)
 
