@@ -157,7 +157,7 @@ def get_stock_price(request):
 
 def get_portfolio_value(request, pk):
 
-    port = Portfolio.objects.get(pk=pk)
+    port = Portfolio.objects.prefetch_related('holding_set', 'holding_set__stock').get(pk=pk)
     start = request.GET['start']
 
     if port.holding_set.all().count() == 0:
@@ -166,12 +166,20 @@ def get_portfolio_value(request, pk):
             )))
 
     if port.holding_set.all().count() >= 1:
+
+        prices_full = pd.DataFrame(Stock.objects.filter(holding__portfolio=port).values('ticker', 'history__Close'))
+
+        for ind, row in prices_full.iterrows():
+            pdb.set_trace()
+            row['history__Close']
+            
+        
         # get portfolio values
-        tickers = ' '.join(port.holding_set.all().values_list('stock__ticker', flat=True))
-        prices_full = yf.download(tickers,
-                                  start,
-                                  datetime.datetime.strftime(
-                                      datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
+        #tickers = ' '.join(port.holding_set.all().values_list('stock__ticker', flat=True))
+        #prices_full = yf.download(tickers,
+        #                          start,
+        #                          datetime.datetime.strftime(
+        #                              datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
         
         prices = prices_full.dropna()
 

@@ -87,15 +87,16 @@ class Stock(models.Model):
     @property
     def price(self):
         try:
-            return(self.history['data'][-1][3])
+            return(self.history['Close'][max(self.history['Close'].keys())])
         except:
             return(0)
 
     @property
     def price_change(self):
         try:
+            closes = pd.DataFrame(self.history)['Close']
             return('{:.2f}%'.format(
-                (self.history['data'][-1][3] - self.history['data'][-2][3])/self.history['data'][-2][3] * 100))
+                (closes[-1] - closes[-2])/closes[-2] * 100))
         except:
             return(0)
 
@@ -142,5 +143,10 @@ class Stock(models.Model):
         self.div_yield = ystock.info['dividendYield']
         self.payoutRatio = ystock.info['payoutRatio']
         self.logo_url = ystock.info['logo_url']
-        self.history = json.loads(json.dumps(ystock.history(period='max').dropna().to_dict(orient='split'), cls=DjangoJSONEncoder))
+
+        history = ystock.history(period='max').dropna()
+        history.index = history.index.astype('str')
+        history = history.to_dict()
+
+        self.history = json.loads(json.dumps(history, cls=DjangoJSONEncoder))
         self.save()
