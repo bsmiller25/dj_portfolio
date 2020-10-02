@@ -34,7 +34,7 @@ class PortfolioCreate(CreateView):
 
 class PortfolioDetail(DetailView):
     #model = Portfolio
-    queryset = Portfolio.objects.prefetch_related('holding_set')
+    queryset = Portfolio.objects.prefetch_related('holding_set', 'holding_set__stock')
         
     def get_context_data(self, **kwargs):
         context = super(PortfolioDetail, self).get_context_data(**kwargs)
@@ -104,8 +104,8 @@ class StockDetail(DetailView):
     def get_context_data(self, **kwargs):
         context = super(StockDetail, self).get_context_data(**kwargs)
 
-        fins = pd.read_json(json.dumps(self.object.history), orient='split')
-
+        fins = pd.read_json(json.dumps(self.object.history))
+        
         divs = fins['Dividends'][fins['Dividends'] != 0]
         splits = fins['Stock Splits'][fins['Stock Splits'] != 0]
         for date, split in splits.iteritems():
@@ -167,20 +167,16 @@ def get_portfolio_value(request, pk):
 
     if port.holding_set.all().count() >= 1:
 
-        prices_full = pd.DataFrame(Stock.objects.filter(holding__portfolio=port).values('ticker', 'history__Close'))
+        prices_full = pd.DataFrame(Stock.objects.filter(holding__portfolio=port).order_by('ticker').values('ticker', 'history__Close'))
 
+        df = pd.DataFrame()
         for ind, row in prices_full.iterrows():
-            pdb.set_trace()
-            row['history__Close']
+            new = pd.DataFrame({row['ticker']: row['history__Close']})
+            df = df.merge(new, "outer", left_index=True, right_index=True)
             
-        
-        # get portfolio values
-        #tickers = ' '.join(port.holding_set.all().values_list('stock__ticker', flat=True))
-        #prices_full = yf.download(tickers,
-        #                          start,
-        #                          datetime.datetime.strftime(
-        #                              datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
-        
+        prices_full = df
+        prices_full.index = prices_full.index.astype('datetime64[ns]')
+        prices_full = prices_full[prices_full.index >= start]
         prices = prices_full.dropna()
 
         try:

@@ -76,8 +76,8 @@
 	<th>Stock</th>
 	<th>Price</th>
 	<th>% Day Change</th>
-	<!--<th>Quantity</th> -->
-	<!-- <th>Value</th> --> 
+	<!-- <th>Quantity</th> -->
+	<!-- <th>Value</th> -->
 	<th>Share</th>
 	<th>Dividend</th>
 	<th>Sector</th>
@@ -112,7 +112,6 @@
   <script>
    $(document).ready(function(){
        $('#holdings').DataTable({
-	   //"order": [[4, "desc"]]
 	   "order":[[3, "desc"]],
 	   "columnDefs": [
 	       {
@@ -147,8 +146,6 @@
 		   $('#valChartWrapper').prepend('<div id="dateError" class="alert alert-danger">'+d.msg+'</div>');
 	       }
 
-	       
-	       
 	       _port = d.port;
 	       _sp500 = d.sp500;
 	       _labels = d.index;
