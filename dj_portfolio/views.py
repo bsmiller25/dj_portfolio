@@ -167,17 +167,25 @@ def get_portfolio_value(request, pk):
 
     if port.holding_set.all().count() >= 1:
 
-        prices_full = pd.DataFrame(Stock.objects.filter(holding__portfolio=port).order_by('ticker').values('ticker', 'history__Close'))
+        tickers = ' '.join(port.holding_set.all().values_list('stock__ticker', flat=True))
+        prices_full = yf.download(tickers,
+                                  start,
+                                  datetime.datetime.strftime(
+                                      datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
 
-        df = pd.DataFrame()
-        for ind, row in prices_full.iterrows():
-            new = pd.DataFrame({row['ticker']: row['history__Close']})
-            df = df.merge(new, "outer", left_index=True, right_index=True)
-            
-        prices_full = df
-        prices_full.index = prices_full.index.astype('datetime64[ns]')
-        prices_full = prices_full[prices_full.index >= start]
         prices = prices_full.dropna()
+        
+        #prices_full = pd.DataFrame(Stock.objects.filter(holding__portfolio=port).order_by('ticker').values('ticker', 'history__Close'))
+        
+        #df = pd.DataFrame()
+        #for ind, row in prices_full.iterrows():
+        #    new = pd.DataFrame({row['ticker']: row['history__Close']})
+        #    df = df.merge(new, "outer", left_index=True, right_index=True)
+            
+        #prices_full = df
+        #prices_full.index = prices_full.index.astype('datetime64[ns]')
+        #prices_full = prices_full[prices_full.index >= start]
+        #prices = prices_full.dropna()
 
         try:
             if prices_full.isna().iloc[0,0]:
