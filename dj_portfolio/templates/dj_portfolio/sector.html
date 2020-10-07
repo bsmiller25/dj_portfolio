@@ -1,0 +1,149 @@
+{% extends 'dj_portfolio/base.html' %}
+
+{% block head %}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.28.0/moment.min.js" integrity="sha512-Q1f3TS3vSt1jQ8AwP2OuenztnLU6LwxgyyYOG1jgMW/cbEMHps/3wjvnl1P3WTrF3chJUWEoxDUEjMxDV8pujg==" crossorigin="anonymous"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.css">
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.js"></script>
+
+
+
+{% endblock %}
+{% block title %}
+  {{ sector }}
+{% endblock %}
+
+{% block content %}
+  <h1>{{ sector }}</h1>
+
+  <div class="row">
+    <div class="col-sm">
+      <input id="start" type="date" class="form-control" value="{{ start }}">
+    </div>
+    <div class="col-sm">
+      <button type="button" class="btn btn-primary" onclick="makeValueChart()">Update Chart</button>
+    </div>
+  </div>
+  
+  <h3>Performance
+    <div id="valChartWrapper">
+      <canvas id="valChart"></canvas>
+    </div>
+    
+    <h3>Holdings</h3>
+    <table id="holdings" class="table">
+      <thead>
+	<th>Stock</th>
+	<th>Price</th>
+	<th>% Day Change</th>
+	<!-- <th>Quantity</th> -->
+	<!-- <th>Value</th> -->
+	<th>Share</th>
+      </thead>
+      <tbody>
+	{% for holding in holdings %}
+	  <tr>
+	    <td><a href="{% url 'portfolio:stock-detail' pk=holding.stock.pk %}">{{ holding.stock.name }} ({{ holding.stock.ticker }})</a></td>
+	    <td>{{ holding.stock.price }}</td>
+	    <td>{{ holding.stock.price_change }}</td>
+	    <!-- <td>{{ holding.quantity }}</td> -->
+	    <!-- <td>{{ holding.display_value }}</td> -->
+	    <td>{{ holding.display_share }}</td>
+
+	  </tr>
+	{% endfor %}
+
+      </tbody>
+    </table>
+    
+    </script>
+    
+    
+    <script>
+     $(document).ready(function(){
+	 $('#holdings').DataTable({
+	     "order":[[3, "desc"]],
+
+       })
+       makeValueChart()
+   })
+
+
+   function makeValueChart() {
+
+       $('#valChart').remove();
+       $('#valChartWrapper').append('<canvas id="valChart"></canvas>')
+       
+       var _labels = [];
+       var _port;
+       var _voo;
+       
+       $.ajax({
+	   url: "{% url 'portfolio:sector-comp-data' pk=portfolio_id sector=sector_slug %}",
+	   type: "get",
+	   data: {"start": $("#start").val()},
+	   success: function(d) {
+	       // display errors
+	       if(d.msg){
+		   $('#dateError').remove()
+		   $('#valChartWrapper').prepend('<div id="dateError" class="alert alert-danger">'+d.msg+'</div>');
+	       }
+
+	       _port = d.port;
+	       _sp500 = d.sp500;
+	       _labels = d.index;
+
+	       day_ch = ((d.port[d.port.length -1] / d.port[d.port.length -2] -1)* 100).toFixed(2)
+	       
+	       if (day_ch >= 0) {
+		   $("#valch").remove()
+		   $('#daychange').append('<p id="valch" style="color:green">' + day_ch + '%' + '</p>');
+	       }
+	       if (day_ch < 0) {
+		   $("#valch").remove()
+		   $('#daychange').append('<p id="valch" style="color:red">' + day_ch + '%' + '</p>');
+	       }
+
+	       // make chart
+	       var ctx = document.getElementById('valChart').getContext('2d'); 
+	       var chart = new Chart(ctx, {
+		   type: 'line',
+		   data: {
+		       labels: _labels,
+		       datasets: [
+			   {label: 'Portfolio',
+			    backgroundColor: '#f08080',
+			    borderColor: '#f08080',
+			    fill: false,
+			    data: _port,
+			   },
+			   {label: 'S&P 500',
+			    backgroundColor: '#d1eeee',
+			    borderColor: '#d1eeee',
+			    fill: false,
+			    data: _sp500,
+			   }
+		       ]
+		   },
+		   options: {
+		       scales: {
+			   xAxes: [{
+			       type: 'time',
+			       time: {
+				   tooltipFormat: 'MM/DD/YYYY',
+			       }
+
+			   }]
+		       }
+		   }
+	       })
+	   }
+       })
+     };
+   
+		 
+    </script>
+
+    
+{% endblock %}
