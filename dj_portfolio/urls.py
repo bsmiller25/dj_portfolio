@@ -14,6 +14,9 @@ urlpatterns = [
 
     path('<pk>/value', views.get_portfolio_value, name='portfolio-value'),
     path('<pk>/sector', views.get_sector_balance, name='portfolio-sector'),
+
+    path('<pk>/sector-comp/<sector>', views.sector_comp, name='sector-comp'),
+    path('<pk>/sector-comp-data/<sector>', views.sector_comp_data, name='sector-comp-data'),
     
     # helper
     path('add-holding', views.PortfolioAddHolding, name='portfolio-add-holding'),

@@ -107,6 +107,10 @@ class Stock(models.Model):
         else:
             return('0%')
 
+    @property
+    def sector_slug(self):
+        return(self.sector.lower().replace(' ', '-'))
+
     def get_sector_industry(self):
 
         url = 'https://eresearch.fidelity.com/eresearch/goto/evaluate/snapshot.jhtml?symbols=' + self.ticker

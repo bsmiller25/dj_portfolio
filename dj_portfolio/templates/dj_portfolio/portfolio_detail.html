@@ -93,7 +93,7 @@
 	    <!-- <td>{{ holding.display_value }}</td> -->
 	    <td>{{ holding.display_share }}</td>
 	    <td>{{ holding.stock.div }}</td>
-	    <td>{{ holding.stock.sector }}</td>
+	    <td><a href="{% url 'portfolio:sector-comp' pk=object.id sector=holding.stock.sector_slug %}">{{ holding.stock.sector }}</a></td>
 	    <td><a href="{% url 'portfolio:holding-update' pk=holding.id %}">Edit</a> <a href="{% url 'portfolio:holding-delete' pk=holding.id %}">Delete</a></td>
 	    <td display="none">{% if holding.stock.clean200 %}Clean200{% endif %}</td>
 	  </tr>
@@ -117,7 +117,7 @@
 	       {
 		   "targets": [7],
 		   "visible": false,
-		   "searchable": true,
+		   "searchable": true
 	       },
 	   ]
        })

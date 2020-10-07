@@ -174,7 +174,7 @@ def get_portfolio_value(request, pk):
                                       datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
 
         prices = prices_full.dropna()
-        
+
         #prices_full = pd.DataFrame(Stock.objects.filter(holding__portfolio=port).order_by('ticker').values('ticker', 'history__Close'))
         
         #df = pd.DataFrame()
@@ -248,3 +248,99 @@ def get_sector_balance(request, pk):
     return JsonResponse(json.loads(json.dumps(sect)))
     
 
+def sector_comp(request, pk, sector):
+
+    sect = sector.replace('-', ' ').title()
+
+    hlds = (Holding
+            .objects
+            .filter(portfolio__id=pk,
+                    stock__sector=sect)
+            .select_related('stock', 'portfolio')
+    )
+
+    start = '2020-09-28'
+
+    context = {
+        'portfolio_id': pk,
+        'sector': sect,
+        'sector_slug': sector,
+        'holdings': hlds,
+        'start': start
+        }
+
+    return render(request, 'dj_portfolio/sector.html', context)
+
+
+def sector_comp_data(request, pk, sector):
+
+    start = request.GET['start']
+    sect = sector.replace('-', ' ').title()
+    
+    hlds = (Holding
+            .objects
+            .select_related('stock', 'portfolio')
+            .filter(
+                portfolio__id=pk,
+                stock__sector=sect
+            ))
+    tickers = ' '.join(hlds.values_list('stock__ticker', flat=True))
+    prices_full = yf.download(tickers,
+                              start,
+                              datetime.datetime.strftime(
+                                  datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close']
+
+    prices = prices_full.dropna()
+    try:
+        if prices_full.isna().iloc[0,0]:
+            prices_full = prices_full.iloc[1:,:]
+    except IndexError:
+        pass
+        
+    quants = hlds.order_by('stock__ticker').values_list('quantity', flat=True)
+    
+    if quants.count() > 1:
+        values = (prices * quants).sum(axis=1)
+    else:
+        values = (prices * quants)
+        
+    values = (values/values[0]).to_json(orient='split')
+    
+    port_data = json.loads(values)
+    port_data['port'] = port_data.pop('data')
+    
+    new_start = datetime.datetime.strftime(prices.index[0], '%Y-%m-%d')
+    orig_start = datetime.datetime.strftime(prices_full.index[0], '%Y-%m-%d')
+    
+    if new_start != orig_start:
+        fault = prices_full.iloc[prices_full.index.get_loc(prices.index[0]) -1,]
+        fault = fault[fault.isna()].index[0]
+
+        port_data['msg'] = 'Earliest available: {}. No data for {}.'.format(
+            new_start, fault)
+ 
+    # get benchmark values
+
+    bench = {'energy': 'XLE',
+             'financials': 'XLF',
+             'utilities': 'XLU',
+             'industrials': 'XLI',
+             'information-technology': 'XLK',
+             'health-care': 'XLV',
+             'consumer-discretionary': 'XLY',
+             'consumer-staples': 'XLP',
+             'materials': 'XLB',
+             'communication-services': 'XTL'}
+    
+    sp500 = yf.download(bench[sector],
+                        new_start,
+                        datetime.datetime.strftime(
+                            datetime.datetime.today() + datetime.timedelta(days=1), '%Y-%m-%d'))['Close'].dropna()
+    
+    sp500 = sp500/sp500[0]
+    port_data['sp500'] = sp500.tolist()
+    
+    return JsonResponse(port_data)
+
+
+    
