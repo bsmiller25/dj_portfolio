@@ -252,6 +252,8 @@ def sector_comp(request, pk, sector):
 
     sect = sector.replace('-', ' ').title()
 
+    port = Portfolio.objects.prefetch_related('holding_set', 'holding_set__stock').get(pk=pk)
+    
     hlds = (Holding
             .objects
             .filter(portfolio__id=pk,
@@ -266,6 +268,7 @@ def sector_comp(request, pk, sector):
         'sector': sect,
         'sector_slug': sector,
         'holdings': hlds,
+        'portfolio': port,
         'start': start
         }
 
@@ -330,7 +333,8 @@ def sector_comp_data(request, pk, sector):
              'consumer-discretionary': 'XLY',
              'consumer-staples': 'XLP',
              'materials': 'XLB',
-             'communication-services': 'XTL'}
+             'communication-services': 'XTL',
+             'real-estate': 'VNQ'}
     
     sp500 = yf.download(bench[sector],
                         new_start,
